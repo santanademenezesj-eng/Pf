@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano Funeral Rosa de Saron - Sistema</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#93C5FD',
+                        accent: '#60A5FA',
+                        danger: '#EF4444',
+                        success: '#10B981',
+                        neutral: '#EFF6FF',
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-paper {
+                background: linear-gradient(to bottom, #EFF6FF, #DBEAFE);
+                box-shadow: 3px 3px 10px rgba(0,0,0,0.15);
+                border: 1px solid #93C5FD;
+            }
+            .edit-input {
+                background: white;
+                border: 1px solid #93C5FD;
+                border-radius: 4px;
+                padding: 2px 6px;
+                width: 100%;
+            }
+            .edit-label {
+                color: #3B82F6;
+                font-weight: 600;
+            }
+        }
+    </style>
+</head>
+<body class="bg-blue-50 min-h-screen">
+    <header class="bg-primary text-white py-4 px-6 shadow-lg">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">🌹 Plano Funeral Rosa de Saron</h1>
+                <p class="text-blue-100 text-sm">Sistema de Controle de Pagamentos & Gestão</p>
+            </div>
+            <nav class="mt-3 md:mt-0 flex gap-2 flex-wrap justify-center">
+                <button onclick="aba('clientes')" class="px-3 py-2 rounded bg-accent/80 hover:bg-accent transition text-sm">
+                    <i class="fa fa-users mr-1"></i> Clientes
+                </button>
+                <button onclick="aba('cobradores')" class="px-3 py-2 rounded bg-accent/80 hover:bg-accent transition text-sm">
+                    <i class="fa fa-user-circle mr-1"></i> Cobradores
+                </button>
+                <button onclick="aba('pagamentos')" class="px-3 py-2 rounded bg-accent/80 hover:bg-accent transition text-sm">
+                    <i class="fa fa-calendar mr-1"></i> Vencimentos
+                </button>
+                <button onclick="aba('caixa')" class="px-3 py-2 rounded bg-accent/80 hover:bg-accent transition text-sm">
+                    <i class="fa fa-money mr-1"></i> Caixa
+                </button>
+                <button onclick="aba('gastos')" class="px-3 py-2 rounded bg-accent/80 hover:bg-accent transition text-sm">
+                    <i class="fa fa-file-text-o mr-1"></i> Gastos
+                </button>
+                <button onclick="aba('fechamento')" class="px-3 py-2 rounded bg-accent/80 hover:bg-accent transition text-sm">
+                    <i class="fa fa-calendar-check-o mr-1"></i> Fechamento
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div id="alertaAtraso" class="hidden fixed top-4 right-4 z-50 bg-red-600 text-white p-4 rounded-lg shadow-xl max-w-sm">
+        <h4 class="font-bold"><i class="fa fa-exclamation-triangle mr-2"></i> Pagamentos em Atraso!</h4>
+        <p id="textoAlerta" class="mt-1 text-sm"></p>
+        <button onclick="document.getElementById('alertaAtraso').classList.add('hidden')" class="mt-2 text-xs underline">Fechar</button>
+    </div>
+
+    <main class="container mx-auto px-4 py-6">
+        <!-- Clientes -->
+        <section id="sec-clientes" class="aba">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-primary">📋 Cadastro de Clientes</h2>
+                <button onclick="formCliente()" class="bg-success text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                    <i class="fa fa-plus mr-1"></i> Novo Cliente
+                </button>
+            </div>
+
+            <div id="formClienteBox" class="hidden card-paper p-6 rounded-lg mb-6">
+                <h3 class="text-lg font-bold text-primary mb-4">Ficha de Cadastro</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Sócio / Nome</label>
+                        <input type="text" id="cliNome" class="w-full p-2 border rounded mt-1" placeholder="Nome completo">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nº Contrato</label>
+                        <input type="text" id="cliContrato" class="w-full p-2 border rounded mt-1" placeholder="00001">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Endereço</label>
+                        <input type="text" id="cliEndereco" class="w-full p-2 border rounded mt-1" placeholder="Rua, Av, nº...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Bairro</label>
+                        <input type="text" id="cliBairro" class="w-full p-2 border rounded mt-1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Cidade / UF</label>
+                        <input type="text" id="cliCidade" class="w-full p-2 border rounded mt-1" value="Caracaraí - RR">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Telefone</label>
+                        <input type="tel" id="cliFone" class="w-full p-2 border rounded mt-1" placeholder="(95) 98100-0000">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Ponto de Referência</label>
+                        <input type="text" id="cliReferencia" class="w-full p-2 border rounded mt-1" placeholder="Próximo à...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Valor Mensal R$</label>
+                        <input type="number" step="0.01" id="cliValor" class="w-full p-2 border rounded mt-1" placeholder="0,00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Cobrador Responsável</label>
+                        <select id="cliCobrador" class="w-full p-2 border rounded mt-1">
+                            <option value="">-- Selecione --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="salvarCliente()" class="bg-primary text-white px-4 py-2 rounded">Salvar</button>
+                    <button onclick="document.getElementById('formClienteBox').classList.add('hidden')" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="p-2 text-left">Contrato</th>
+                            <th class="p-2 text-left">Nome</th>
+                            <th class="p-2 text-left">Cidade</th>
+                            <th class="p-2 text-left">Cobrador</th>
+                            <th class="p-2 text-left">Status</th>
+                            <th class="p-2 text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaClientes" class="divide-y"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Ficha do Cliente -->
+        <section id="sec-ficha" class="aba hidden">
+            <button onclick="aba('clientes')" class="mb-4 text-primary hover:underline">
+                <i class="fa fa-arrow-left"></i> Voltar à lista
+            </button>
+            
+            <div class="card-paper p-6 rounded-lg">
+                <h2 class="text-2xl font-bold text-primary mb-1">PLANO FUNERAL ROSA DE SARON</h2>
+                <h3 class="text-lg font-semibold text-right -mt-10 mb-6">FICHA DE PAGAMENTOS</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 border-b pb-6">
+                    <div>
+                        <span class="edit-label">Sócio:</span>
+                        <input type="text" id="fichaNome" class="edit-input mt-1" onchange="salvarFichaCliente()">
+                    </div>
+                    <div>
+                        <span class="edit-label">Contrato Nº:</span>
+                        <input type="text" id="fichaContrato" class="edit-input mt-1" onchange="salvarFichaCliente()">
+                    </div>
+                    <div class="md:col-span-2">
+                        <span class="edit-label">End.:</span>
+                        <input type="text" id="fichaEndereco" class="edit-input mt-1" onchange="salvarFichaCliente()">
+                    </div>
+                    <div>
+                        <span class="edit-label">Bairro:</span>
+                        <input type="text" id="fichaBairro" class="edit-input mt-1" onchange="salvarFichaCliente()">
+                    </div>
+                    <div>
+                        <span class="edit-label">Cidade:</span>
+                        <input type="text" id="fichaCidade" class="edit-input mt-1" onchange="salvarFichaCliente()">
+                    </div>
+                    <div>
+                        <span class="edit-label">Fone:</span>
+                        <input type="tel" id="fichaFone" class="edit-input mt-1" onchange="salvarFichaCliente()">
+                    </div>
+                    <div class="md:col-span-2">
+                        <span class="edit-label">Ponto de Referência:</span>
+                        <input type="text" id="fichaReferencia" class="edit-input mt-1" onchange="salvarFichaCliente()">
+                    </div>
+                    <div>
+                        <span class="edit-label">Valor Mensal R$:</span>
+                        <input type="number" step="0.01" id="fichaValor" class="edit-input mt-1" onchange="salvarFichaCliente()">
+                    </div>
+                    <div>
+                        <span class="edit-label">Cobrador:</span>
+                        <select id="fichaCobrador" class="edit-input mt-1" onchange="salvarFichaCliente()">
+                            <option value="">-- Selecione --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-blue-100">
+                                <th class="border p-2">Valor R$</th>
+                                <th class="border p-2">Vencimento ✏️</th>
+                                <th class="border p-2">Data Pagamento ✏️</th>
+                                <th class="border p-2">Valor Pago R$ ✏️</th>
+                                <th class="border p-2">Status</th>
+                                <th class="border p-2">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaPagamentos"></tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 p-3 bg-blue-50 rounded border">
+                    <h4 class="font-bold text-primary mb-2">Adicionar Nova Parcela</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <input type="date" id="novaDataVenc" class="p-2 border rounded">
+                        <input type="number" step="0.01" id="novaValorParc" class="p-2 border rounded" placeholder="Valor R$">
+                        <button onclick="adicionarParcela()" class="bg-primary text-white rounded">Adicionar</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cobradores -->
+        <section id="sec-cobradores" class="aba hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-primary">👥 Cadastro de Cobradores</h2>
+                <button onclick="formCobrador()" class="bg-success text-white px-4 py-2 rounded">
+                    <i class="fa fa-plus"></i> Novo Cobrador
+                </button>
+            </div>
+            <div id="formCobradorBox" class="hidden card-paper p-6 rounded-lg mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium">Nome Completo</label><input type="text" id="cobNome" class="w-full p-2 border rounded mt-1"></div>
+                    <div><label class="block text-sm font-medium">Telefone</label><input type="tel" id="cobFone" class="w-full p-2 border rounded mt-1"></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-medium">Endereço</label><input type="text" id="cobEndereco" class="w-full p-2 border rounded mt-1"></div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="salvarCobrador()" class="bg-primary text-white px-4 py-2 rounded">Salvar</button>
+                    <button onclick="document.getElementById('formCobradorBox').classList.add('hidden')" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-primary text-white">
+                        <tr><th class="p-2 text-left">Nome</th><th class="p-2 text-left">Telefone</th><th class="p-2 text-left">Qtd. Clientes</th><th class="p-2 text-center">Ações</th></tr>
+                    </thead>
+                    <tbody id="listaCobradores" class="divide-y"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Vencimentos / Atrasos -->
+        <section id="sec-pagamentos" class="aba hidden">
+            <h2 class="text-xl font-bold text-primary mb-4">📅 Controle de Vencimentos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="bg-red-50 border border-red-200 p-4 rounded-lg">
+                    <h3 class="font-bold text-red-700 mb-2">⚠️ Em Atraso</h3>
+                    <div id="listaAtraso" class="space-y-2 text-sm max-h-60 overflow-y-auto">
+                        <p class="text-gray-500">Nenhum atraso detectado</p>
+                    </div>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <h3 class="font-bold text-blue-700 mb-2">📆 Próximos Vencimentos (7 dias)</h3>
+                    <div id="listaProximos" class="space-y-2 text-sm max-h-60 overflow-y-auto">
+                        <p class="text-gray-500">Nenhum vencimento próximo</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fluxo de Caixa -->
+        <section id="sec-caixa" class="aba hidden">
+            <h2 class="text-xl font-bold text-primary mb-4">💰 Fluxo de Caixa</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-green-50 border border-green-200 p-4 rounded-lg">
+                    <h3 class="text-sm text-green-700 font-medium">Total Recebido</h3>
+                    <p class="text-2xl font-bold text-green-600" id="caixaEntradas">R$ 0,00</p>
+                </div>
+                <div class="bg-red-50 border border-red-200 p-4 rounded-lg">
+                    <h3 class="text-sm text-red-700 font-medium">Total de Gastos</h3>
+                    <p class="text-2xl font-bold text-red-600" id="caixaSaidas">R$ 0,00</p>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <h3 class="text-sm text-blue-700 font-medium">Saldo Atual</h3>
+                    <p class="text-2xl font-bold text-blue-600" id="caixaSaldo">R$ 0,00</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="p-2 text-left">Data</th>
+                            <th class="p-2 text-left">Descrição</th>
+                            <th class="p-2 text-left">Tipo</th>
+                            <th class="p-2 text-right">Valor R$</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaCaixa" class="divide-y"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Gastos -->
+        <section id="sec-gastos" class="aba hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-primary">📝 Controle de Gastos</h2>
+                <button onclick="formGasto()" class="bg-danger text-white px-4 py-2 rounded">
+                    <i class="fa fa-minus-circle mr-1"></i> Novo Gasto
+                </button>
+            </div>
+            <div id="formGastoBox" class="hidden card-paper p-6 rounded-lg mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium">Data</label><input type="date" id="gastoData" class="w-full p-2 border rounded mt-1"></div>
+                    <div><label class="block text-sm font-medium">Valor R$</label><input type="number" step="0.01" id="gastoValor" class="w-full p-2 border rounded mt-1" placeholder="0,00"></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-medium">Descrição</label><input type="text" id="gastoDesc" class="w-full p-2 border rounded mt-1" placeholder="Ex: Combustível..."></div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="salvarGasto()" class="bg-danger text-white px-4 py-2 rounded">Registrar</button>
+                    <button onclick="document.getElementById('formGastoBox').classList.add('hidden')" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead class="bg-red-700 text-white">
+                        <tr><th class="p-2 text-left">Data</th><th class="p-2 text-left">Descrição</th><th class="p-2 text-right">Valor R$</th><th class="p-2 text-center">Ação</th></tr>
+                    </thead>
+                    <tbody id="listaGastos" class="divide-y"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Fechamento do Dia -->
+        <section id="sec-fechamento" class="aba hidden">
+            <h2 class="text-xl font-bold text-primary mb-4">📊 Fechamento do Dia</h2>
+            <div class="mb-4 flex gap-2 items-center">
+                <label class="font-medium">Data do Fechamento:</label>
+                <input type="date" id="dataFechamento" class="p-2 border rounded" onchange="carregarFechamento()">
+                <button onclick="fecharDia()" class="bg-primary text-white px-4 py-2 rounded">
+                    <i class="fa fa-check-circle mr-1"></i> Fechar Dia
+                </button>
+            </div>
+            <div id="resumoFechamento" class="card-paper p-6 rounded-lg mb-6">
+                <h3 class="text-lg font-bold text-primary mb-4">Resumo do Dia — <span id="dataDia"></span></h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-green-700">💰 Entradas</h4>
+                        <p class="text-xl font-bold text-green-600 mt-1" id="fEntradas">R$ 0,00</p>
+                        <p class="text-sm text-gray-600 mt-1" id="fQtdReceb">0 pagamentos</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-red-700">📉 Saídas</h4>
+                        <p class="text-xl font-bold text-red-600 mt-1" id="fSaidas">R$ 0,00</p>
+                        <p class="text-sm text-gray-600 mt-1" id="fQtdGastos">0 registros</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg md:col-span-2">
+                        <h4 class="font-medium text-blue-700">📈 Saldo do Dia</h4>
+                        <p class="text-2xl font-bold text-blue-600 mt-1" id="fSaldo">R$ 0,00</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <h3 class="font-bold text-primary p-3 bg-blue-50">Histórico de Fechamentos</h3>
+                <table class="w-full text-sm">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="p-2 text-left">Data</th>
+                            <th class="p-2 text-right">Entradas R$</th>
+                            <th class="p-2 text-right">Saídas R$</th>
+                            <th class="p-2 text-right">Saldo R$</th>
+                            <th class="p-2 text-center">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaFechamentos" class="divide-y"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-primary/90 text-white py-3 mt-8 text-center text-sm">
+        <p>🌹 Plano Funeral Rosa de Saron — Sistema de Gestão</p>
+        <p class="text-blue-100 text-xs mt-1">Dados salvos automaticamente no dispositivo</p>
+    </footer>
+
+    <script>
+        let dados = {
+            clientes: [],
+            cobradores: [],
+            gastos: [],
+            movimentacoes: [],
+            fechamentos: []
+        };
+        let clienteAtual = null;
+
+        function carregarDados() {
+            const salvo = localStorage.getItem('sistemaRosaSaron');
+            if (salvo) dados = JSON.parse(salvo);
+            if (!dados.fechamentos) dados.fechamentos = [];
+            if (!dados.cobradores) dados.cobradores = [];
+            if (!dados.clientes) dados.clientes = [];
+            atualizarTela();
+            verificarAtrasos();
+            document.getElementById('dataFechamento').value = new Date().toISOString().split('T')[0];
+            carregarFechamento();
+        }
+        function salvarDados() {
+            localStorage.setItem('sistemaRosaSaron', JSON.stringify(dados));
+            atualizarTela();
+        }
+
+        function aba(nome) {
+            document.querySelectorAll('.aba').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`sec-${nome}`).classList.remove('hidden');
+            if (nome === 'caixa') atualizarCaixa();
+            if (nome === 'fechamento') carregarFechamento();
+        }
+
+        function carregarCobradoresSelect() {
+            const selCli = document.getElementById('cliCobrador');
+            const selFicha = document.getElementById('fichaCobrador');
+            selCli.innerHTML = `<option value="">-- Selecione --</option>`;
+            selFicha.innerHTML = `<option value="">-- Selecione --</option>`;
+            dados.cobradores.forEach(c => {
+                selCli.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+                selFicha.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+            });
+        }
+
+        function formCliente() {
+            document.getElementById('formClienteBox').classList.remove('hidden');
+            ['cliNome','cliContrato','cliEndereco','cliBairro','cliFone','cliReferencia','cliValor'].forEach(id=>document.getElementById(id).value='');
+            document.getElementById('cliCidade').value='Caracaraí - RR';
+            carregarCobradoresSelect();
+        }
+        function salvarCliente() {
+            dados.clientes.push({
+                id: Number(Date.now()),
+                nome: document.getElementById('cliNome').value.trim(),
+                contrato: document.getElementById('cliContrato').value.trim(),
+                endereco: document.getElementById('cliEndereco').value.trim(),
+                bairro: document.getElementById('cliBairro').value.trim(),
+                cidade: document.getElementById('cliCidade').value.trim(),
+                fone: document.getElementById('cliFone').value.trim(),
+                referencia: document.getElementById('cliReferencia').value.trim(),
+                valor: parseFloat(document.getElementById('cliValor').value) || 0,
+                cobradorId: document.getElementById('cliCobrador').value,
+                parcelas: []
+            });
+            salvarDados();
+            document.getElementById('formClienteBox').classList.add('hidden');
+        }
+
+        function abrirFicha(id) {
+            clienteAtual = dados.clientes.find(c => c.id === Number(id));
+            if (!clienteAtual) return;
+            document.getElementById('fichaNome').value = clienteAtual.nome;
+            document.getElementById('fichaContrato').value = clienteAtual.contrato;
+            document.getElementById('fichaEndereco').value = clienteAtual.endereco;
+            document.getElementById('fichaBairro').value = clienteAtual.bairro;
+            document.getElementById('fichaCidade').value = clienteAtual.cidade;
+            document.getElementById('fichaFone').value = clienteAtual.fone;
+            document.getElementById('fichaReferencia').value = clienteAtual.referencia;
+            document.getElementById('fichaValor').value = clienteAtual.valor;
+            carregarCobradoresSelect();
+            document.getElementById('fichaCobrador').value = clienteAtual.cobradorId || '';
+            renderizarParcelas();
+            aba('ficha');
+        }
+
+        function salvarFichaCliente() {
+            if (!clienteAtual) return;
+            clienteAtual.nome = document.getElementById('fichaNome').value.trim();
+            clienteAtual.contrato = document.getElementById('fichaContrato').value.trim();
+            clienteAtual.endereco = document.getElementById('fichaEndereco').value.trim();
+            clienteAtual.bairro = document.getElementById('fichaBairro').value.trim();
+            clienteAtual.cidade = document.getElementById('fichaCidade').value.trim();
+            clienteAtual.fone = document.getElementById('fichaFone').value.trim();
+            clienteAtual.referencia = document.getElementById('fichaReferencia').value.trim();
+            clienteAtual.valor = parseFloat(document.getElementById('fichaValor').value) || 0;
+            clienteAtual.cobradorId = document.getElementById('fichaCobrador').value;
+            salvarDados();
+        }
+
+        function adicionarParcela() {
+            if (!clienteAtual) return;
+            const venc = document.getElementById('novaDataVenc').value;
+            const val = parseFloat(document.getElementById('novaValorParc').value);
+            if (!venc || !val) return alert('Preencha data e valor!');
+            clienteAtual.parcelas.push({id: Number(Date.now()), dataVenc: venc, valor: val, dataPag: null, valorPago: null});
+            salvarDados();
+            renderizarParcelas();
+            verificarAtrasos();
+        }
+
+        function atualizarVencimento(parcelaId, novaDataVenc) {
+            if (!clienteAtual) return;
+            const parcela = clienteAtual.parcelas.find(p => p.id === Number(parcelaId));
+            if (!parcela) return;
+            parcela.dataVenc = novaDataVenc;
+            salvarDados();
+            verificarAtrasos();
+        }
+
+        function atualizarPagamento(parcelaId, novaDataPag, novoValorPago) {
+            if (!clienteAtual) return;
+            const parcela = clienteAtual.parcelas.find(p => p.id === Number(parcelaId));
+            if (!parcela) return;
+
+            if (parcela.dataPag && parcela.valorPago) {
+                dados.movimentacoes = dados.movimentacoes.filter(m => 
+                    !(m.descricao.includes(clienteAtual.nome) && m.data === parcela.dataPag && m.valor === parcela.valorPago)
+                );
+            }
+
+            parcela.dataPag = novaDataPag || null;
+            parcela.valorPago = novoValorPago ? parseFloat(novoValorPago) : null;
+
+            if (parcela.dataPag && parcela.valorPago) {
+                dados.movimentacoes.push({
+                    data: parcela.dataPag,
+                    descricao: `Pagamento — ${clienteAtual.nome} (Contrato ${clienteAtual.contrato})`,
+                    tipo: 'entrada',
+                    valor: parcela.valorPago
+                });
+            }
+            salvarDados();
+            verificarAtrasos();
+        }
+
+        function renderizarParcelas() {
+            const tb = document.getElementById('tabelaPagamentos');
+            tb.innerHTML = '';
+            if (!clienteAtual) return;
+            clienteAtual.parcelas.forEach(p => {
+                const hoje = new Date(), venc = new Date(p.dataVenc);
+                const atrasada = !p.dataPag && venc < hoje;
+                const status = p.dataPag 
+                    ? `<span class="text-green-600 font-bold">✅ Pago</span>` 
+                    : (atrasada ? `<span class="text-red-600 font-bold">⚠️ Atrasado</span>` : `<span class="text-blue-600">⏳ Pendente</span>`);
+                tb.innerHTML += `
+                <tr class="${atrasada?'bg-red-50':''}">
+                    <td class="border p-2">R$ ${p.valor.toFixed(2)}</td>
+                    <td class="border p-2">
+                        <input type="date" value="${p.dataVenc}" 
+                            onchange="atualizarVencimento(${p.id}, this.value)"
+                            class="p-1 border rounded text-sm w-full">
+                    </td>
+                    <td class="border p-2">
+                        <input type="date" value="${p.dataPag||''}" 
+                            onchange="atualizarPagamento(${p.id}, this.value, ${p.valorPago||p.valor})"
+                            class="p-1 border rounded text-sm w-full">
+                    </td>
+                    <td class="border p-2">
+                        <input type="number" step="0.01" value="${p.valorPago||''}" placeholder="${p.valor.toFixed(2)}"
+                            onchange="atualizarPagamento(${p.id}, '${p.dataPag||new Date().toISOString().split('T')[0]}', this.value)"
+                            class="p-1 border rounded text-sm w-full">
+                    </td>
+                    <td class="border p-2">${status}</td>
+                    <td class="border p-2 text-center">
+                        <button onclick="excluirParcela(${p.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Excluir</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        function excluirParcela(id) {
+            if (!confirm('Excluir esta parcela?')) return;
+            const numId = Number(id);
+            const parcela = clienteAtual.parcelas.find(p => p.id === numId);
+            if (parcela && parcela.dataPag && parcela.valorPago) {
+                dados.movimentacoes = dados.movimentacoes.filter(m => 
+                    !(m.descricao.includes(clienteAtual.nome) && m.data === parcela.dataPag && m.valor === parcela.valorPago)
+                );
+            }
+            clienteAtual.parcelas = clienteAtual.parcelas.filter(p => p.id !== numId);
+            salvarDados();
+            renderizarParcelas();
+        }
+
+        function formCobrador() {
+            document.getElementById('formCobradorBox').classList.remove('hidden');
+            ['cobNome','cobFone','cobEndereco'].forEach(id=>document.getElementById(id).value='');
+        }
+        function salvarCobrador() {
+            dados.cobradores.push({
+                id: Number(Date.now()),
+                nome: document.getElementById('cobNome').value.trim(),
+                fone: document.getElementById('cobFone').value.trim(),
+                endereco: document.getElementById('cobEndereco').value.trim()
+            });
+            salvarDados();
+            document.getElementById('formCobradorBox').classList.add('hidden');
+        }
+        function excluirCobrador(id) {
+            if (!confirm('Tem certeza que deseja excluir este cobrador?')) return;
+            const numId = Number(id);
+            dados.cobradores = dados.cobradores.filter(c => c.id !== numId);
+            dados.clientes.forEach(cli => {
+                if (Number(cli.cobradorId) === numId) cli.cobradorId = '';
+            });
+            salvarDados();
+        }
+
+        function formGasto() {
+            document.getElementById('formGastoBox').classList.remove('hidden');
+            document.getElementById('gastoData').value = new Date().toISOString().split('T')[0];
+            document.getElementById('gastoValor').value=''; document.getElementById('gastoDesc').value='';
+        }
+        function salvarGasto() {
+            const val = parseFloat(document.getElementById('gastoValor').value);
+            if (!val) return alert('Informe o valor!');
+            const gasto = {id: Number(Date.now()), data: document.getElementById('gastoData').value, descricao: document.getElementById('gastoDesc').value.trim(), valor: val};
+            dados.gastos.push(gasto);
+            dados.movimentacoes.push({data: gasto.data, descricao: `GASTO: ${gasto.descricao}`, tipo: 'saida', valor: gasto.valor});
+            salvarDados();
+            document.getElementById('formGastoBox').classList.add('hidden');
+        }
+        function excluirGasto(id) {
+            if (!confirm('Excluir este gasto?')) return;
+            const numId = Number(id);
+            const g = dados.gastos.find(x => x.id === numId);
+            dados.gastos = dados.gastos.filter(x => x.id !== numId);
+            if (g) {
+                dados.movimentacoes = dados.movimentacoes.filter(m => !(m.descricao === `GASTO: ${g.descricao}` && m.data === g.data && m.valor === g.valor));
+            }
+            salvarDados();
+        }
+
+        function atualizarCaixa() {
+            let ent=0, sai=0;
+            dados.movimentacoes.forEach(m => m.tipo === 'entrada' ? ent += m.valor : sai += m.valor);
+            document.getElementById('caixaEntradas').textContent = `R$ ${ent.toFixed(2)}`;
+            document.getElementById('caixaSaidas').textContent = `R$ ${sai.toFixed(2)}`;
+            document.getElementById('caixaSaldo').textContent = `R$ ${(ent-sai).toFixed(2)}`;
+            const lst = document.getElementById('listaCaixa');
+            lst.innerHTML = '';
+            dados.movimentacoes.slice().reverse().forEach(m => {
+                lst.innerHTML += `
+                <tr>
+                    <td class="p-2">${formatarData(m.data)}</td>
+                    <td class="p-2">${m.descricao}</td>
+                    <td class="p-2"><span class="${m.tipo==='entrada'?'text-green-600':'text-red-600'}">${m.tipo==='entrada'?'Entrada':'Saída'}</span></td>
+                    <td class="p-2 text-right font-medium">${m.tipo==='entrada'?'+':'-'} R$ ${m.valor.toFixed(2)}</td>
+                </tr>`;
+            });
+        }
+
+        function carregarFechamento() {
+            const data = document.getElementById('dataFechamento').value;
+            document.getElementById('dataDia').textContent = formatarData(data);
+            const movDia = dados.movimentacoes.filter(m => m.data === data);
+            const ent = movDia.filter(m => m.tipo === 'entrada').reduce((s, m) => s + m.valor, 0);
+            const sai = movDia.filter(m => m.tipo === 'saida').reduce((s, m) => s + m.valor, 0);
+            document.getElementById('fEntradas').textContent = `R$ ${ent.toFixed(2)}`;
+            document.getElementById('fSaidas').textContent = `R$ ${sai.toFixed(2)}`;
+            document.getElementById('fSaldo').textContent = `R$ ${(ent-sai).toFixed(2)}`;
+            document.getElementById('fQtdReceb').textContent = `${movDia.filter(m => m.tipo === 'entrada').length} pagamentos`;
+            document.getElementById('fQtdGastos').textContent = `${movDia.filter(m => m.tipo === 'saida').length} registros`;
+            const lst = document.getElementById('listaFechamentos');
+            lst.innerHTML = '';
+            dados.fechamentos.slice().reverse().forEach(f => {
+                lst.innerHTML += `
+                <tr>
+                    <td class="p-2">${formatarData(f.data)}</td>
+                    <td class="p-2 text-right text-green-600 font-medium">R$ ${f.entradas.toFixed(2)}</td>
+                    <td class="p-2 text-right text-red-600 font-medium">R$ ${f.saidas.toFixed(2)}</td>
+                    <td class="p-2 text-right text-blue-600 font-bold">R$ ${f.saldo.toFixed(2)}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="excluirFechamento(${f.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Excluir</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        function fecharDia() {
+            const data = document.getElementById('dataFechamento').value;
+            if (!data) return alert('Selecione a data!');
+            const movDia = dados.movimentacoes.filter(m => m.data === data);
+            const entradas = movDia.filter(m => m.tipo === 'entrada').reduce((s, m) => s + m.valor, 0);
+            const saidas = movDia.filter(m => m.tipo === 'saida').reduce((s, m) => s + m.valor, 0);
+            const idx = dados.fechamentos.findIndex(f => f.data === data);
+            const fech = {id: Number(Date.now()), data, entradas, saidas, saldo: entradas - saidas};
+            if (idx >= 0) dados.fechamentos[idx] = fech;
+            else dados.fechamentos.push(fech);
+            salvarDados();
+            carregarFechamento();
+            alert(`✅ Dia fechado! Saldo: R$ ${(entradas-saidas).toFixed(2)}`);
+        }
+
+        function excluirFechamento(id) {
+            if (!confirm('Excluir este fechamento? Os movimentos do dia NÃO serão apagados.')) return;
+            dados.fechamentos = dados.fechamentos.filter(f => f.id !== Number(id));
+            salvarDados();
+            carregarFechamento();
+        }
+
+        function verificarAtrasos() {
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+            const sem = new Date(hoje.getTime() + 7*86400000);
+            let atrasados = [], proximos = [];
+            dados.clientes.forEach(cli => {
+                cli.parcelas.forEach(p => {
+                    if (p.dataPag) return;
+                    const v = new Date(p.dataVenc);
+                    if (v < hoje) atrasados.push(`${cli.nome} — ${formatarData(p.dataVenc)} — R$ ${p.valor.toFixed(2)}`);
+                    else if (v <= sem) proximos.push(`${cli.nome} — ${formatarData(p.dataVenc)} — R$ ${p.valor.toFixed(2)}`);
+                });
+            });
+            if (atrasados.length) {
+                document.getElementById('alertaAtraso').classList.remove('hidden');
+                document.getElementById('textoAlerta').textContent = `${atrasados.length} parcela(s) em atraso!`;
+            } else document.getElementById('alertaAtraso').classList.add('hidden');
+            document.getElementById('listaAtraso').innerHTML = atrasados.length ? atrasados.map(t => `<p class="p-1 bg-red-100 rounded">${t}</p>`).join('') : '<p class="text-gray-500">Nenhum atraso</p>';
+            document.getElementById('listaProximos').innerHTML = proximos.length ? proximos.map(t => `<p class="p-1 bg-blue-100 rounded">${t}</p>`).join('') : '<p class="text-gray-500">Nenhum vencimento próximo</p>';
+        }
+
+        function atualizarTela() {
+            const lstCli = document.getElementById('listaClientes');
+            lstCli.innerHTML = '';
+            dados.clientes.forEach(cli => {
+                const atr = cli.parcelas.some(p => !p.dataPag && new Date(p.dataVenc) < new Date());
+                const nomeCobrador = cli.cobradorId 
+                    ? (dados.cobradores.find(c => c.id === Number(cli.cobradorId))?.nome || 'Não encontrado') 
+                    : 'Não atribuído';
+                lstCli.innerHTML += `
+                <tr class="${atr?'bg-red-50':''}">
+                    <td class="p-2">${cli.contrato}</td>
+                    <td class="p-2">${cli.nome}</td>
+                    <td class="p-2">${cli.cidade}</td>
+                    <td class="p-2">${nomeCobrador}</td>
+                    <td class="p-2">${atr?'<span class="text-red-600 font-bold">⚠️ Atraso</span>':'<span class="text-green-600">Em dia</span>'}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="abrirFicha(${cli.id})" class="bg-primary text-white px-2 py-1 rounded text-xs">📄 Ficha</button>
+                        <button onclick="excluirCliente(${cli.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs ml-1">🗑️ Excluir</button>
+                    </td>
+                </tr>`;
+            });
+
+            const lstCob = document.getElementById('listaCobradores');
+            lstCob.innerHTML = '';
+            dados.cobradores.forEach(c => {
+                const qtd = dados.clientes.filter(x => x.cobradorId == c.id).length;
+                lstCob.innerHTML += `
+                <tr>
+                    <td class="p-2">${c.nome}</td>
+                    <td class="p-2">${c.fone}</td>
+                    <td class="p-2">${qtd}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="excluirCobrador(${c.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Excluir</button>
+                    </td>
+                </tr>`;
+            });
+
+            const lstGas = document.getElementById('listaGastos');
+            lstGas.innerHTML = '';
+            dados.gastos.forEach(g => {
+                lstGas.innerHTML += `
+                <tr>
+                    <td class="p-2">${formatarData(g.data)}</td>
+                    <td class="p-2">${g.descricao}</td>
+                    <td class="p-2 text-right font-medium">R$ ${g.valor.toFixed(2)}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="excluirGasto(${g.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Excluir</button>
+                    </td>
+                </tr>`;
+            });
+
+            carregarCobradoresSelect();
+        }
+
+        function excluirCliente(id) {
+            if (!confirm('Tem certeza que deseja excluir este cliente?')) return;
+            const numId = Number(id);
+            const cli = dados.clientes.find(c => c.id === numId);
+            if (cli) {
+                cli.parcelas.forEach(p => {
+                    if (p.dataPag && p.valorPago) {
+                        dados.movimentacoes = dados.movimentacoes.filter(m => 
+                            !(m.descricao.includes(cli.nome) && m.data === p.dataPag && m.valor === p.valorPago)
+                        );
+                    }
+                });
+            }
+            dados.clientes = dados.clientes.filter(c => c.id !== numId);
+            salvarDados();
+        }
+
+        function formatarData(s) {
+            if (!s) return '—';
+            const [a, m, d] = s.split('-');
+            return `${d}/${m}/${a}`;
+        }
+
+        carregarDados();
+        setInterval(verificarAtrasos, 3600000);
+    </script>
+</body>
+</html>
